@@ -1,5 +1,4 @@
-# Name
-Predictive Analytics - Forecast
+# Predictive Analytics
 
 ## Description
 Predictive Analytics is a forecast project
@@ -9,9 +8,10 @@ Clone this respository and setup a python [virtual environment](https://virtuale
 
 ```bash
 git clone https://github.com/Meigarom/Predictive-Analytics.git
-virtualenv .venv
-source .venv/bin/activate
+virtualenv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+
+jupyter notebook
 ```
 
 ## Usage
