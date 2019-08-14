@@ -30,7 +30,7 @@ def load_artifact( path, name ):
 # Loadings 
 # ---------------------------------
 # models
-model_path = '/Users/meigarom/repos/Predictive-Analytics/models/'
+model_path = '/Users/meigarom/repos/Predictive-Analytics/model/'
 model_name = 'model_xgb.pkl'
 
 model_rossmann = load_artifact( model_path, model_name )
@@ -54,20 +54,23 @@ def rossmann_predict():
     # convert json to DataFrame
     test = pd.DataFrame( test_json, index=[0] )
 
+    print( test )
+
     # class to prediction
     pipeline = Rossmann()
 
-    # pre-process the test data to prediction
-    print( '===> pre-process test data to prediction' )
-    test = pipeline.transform( test )
+    ## pre-process the test data to prediction
+    #print( '===> pre-process test data to prediction' )
+    #test = pipeline.transform( test )
 
-    # feature engineering
-    print( '===> feature engineering' )
-    data = pipeline.feature_engineering( test, feat_transf )
+    ## feature engineering
+    #print( '===> feature engineering' )
+    #data = pipeline.feature_engineering( test, feat_transf )
 
-    # make a prediction
-    print( '===> prediction' )
-    response_json = pipeline.get_prediction( model=model_rossmann, original_data=test, test_data=data ) 
+    ## make a prediction
+    #print( '===> prediction' )
+    response_json = test_json
+    #response_json = pipeline.get_prediction( model=model_rossmann, original_data=test, test_data=data ) 
     return response_json
 
 
