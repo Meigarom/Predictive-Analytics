@@ -54,8 +54,6 @@ def rossmann_predict():
     # convert json to DataFrame
     test = pd.DataFrame( test_json, index=[0] )
 
-    print( test )
-
     # class to prediction
     pipeline = Rossmann()
 
@@ -63,10 +61,11 @@ def rossmann_predict():
     #print( '===> pre-process test data to prediction' )
     #test = pipeline.transform( test )
 
-    ## feature engineering
-    #print( '===> feature engineering' )
-    #data = pipeline.feature_engineering( test, feat_transf )
+    # feature engineering
+    print( '===> feature engineering' )
+    data = pipeline.feature_engineering( test )
 
+    print( data.T )
     ## make a prediction
     #print( '===> prediction' )
     response_json = test_json
