@@ -35,12 +35,6 @@ model_name = 'model_xgb.pkl'
 
 model_rossmann = load_artifact( model_path, model_name )
 
-## transformations
-#feat_transf_path = '/Users/meigarom/respos/Predictive-Analytics/parameters/'
-#feat_transf_name = 'feature_transformation.dat' 
-#
-#feat_transf = load_artifact( feat_transf_path, feat_transf_name )
-
 
 # ---------------------------------
 # Endpoint 
@@ -52,22 +46,25 @@ def rossmann_predict():
     test_json = request.get_json()
 
     # convert json to DataFrame
-    test = pd.DataFrame( test_json, index=[0] )
+    if isinstance( test_json, dict ): # an unique example of test
+        test_raw = pd.DataFrame( test_json, index=[0] )
+    else:                             # multiple examples
+        test_raw = pd.DataFrame( test_json, columns=list( test_json[0].keys() ) )
 
     # class to prediction
     pipeline = Rossmann()
 
-    ## pre-process the test data to prediction
-    #print( '===> pre-process test data to prediction' )
-    #test = pipeline.transform( test )
+    # pre-process the test data to prediction
+    print( '===> pre-process test data to prediction' )
+    test_transformed = pipeline.transform( test_raw.copy() )
 
     # feature engineering
     print( '===> feature engineering' )
-    data = pipeline.feature_engineering( test )
+    data = pipeline.feature_engineering( test_transformed )
 
     # make a prediction
     print( '===> prediction' )
-    response_json = pipeline.get_prediction( model=model_rossmann, test_data=data ) 
+    response_json = pipeline.get_prediction( model=model_rossmann, test_original=test_raw, test_data=data ) 
 
     return response_json
 
