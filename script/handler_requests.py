@@ -65,11 +65,10 @@ def rossmann_predict():
     print( '===> feature engineering' )
     data = pipeline.feature_engineering( test )
 
-    print( data.T )
-    ## make a prediction
-    #print( '===> prediction' )
-    response_json = test_json
-    #response_json = pipeline.get_prediction( model=model_rossmann, original_data=test, test_data=data ) 
+    # make a prediction
+    print( '===> prediction' )
+    response_json = pipeline.get_prediction( model=model_rossmann, test_data=data ) 
+
     return response_json
 
 
