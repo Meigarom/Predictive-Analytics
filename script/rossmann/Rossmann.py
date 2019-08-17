@@ -1,6 +1,7 @@
-import pandas as pd
-import numpy  as np
+import numpy   as np
+import pandas  as pd
 import pickle
+import xgboost as xgb
 
 class Rossmann( object ):
     def __init__( self ):
@@ -67,6 +68,18 @@ class Rossmann( object ):
         # drop original features
         data = data.drop( ['day_of_week', 'competition_open_since_month', 'promo2_since_week', 'day'], axis=1 )
 
+        # -----  Convert data types -----
+        data['store_type'] = data['store_type'].astype( int )
+        data['assortment'] = data['assortment'].astype( int )
+
+        # -----  Organize columns -----
+        cols = ['store', 'store_type', 'assortment', 'promo', 'month_of_promo', 'promo2', 
+                'promo2_since_year', 'promo2_since_week_sin', 'promo2_since_week_cos', 
+                'competition_distance', 'competition_open_since_month_sin', 
+                'competition_open_since_month_cos', 'competition_open_since_year', 
+                'month_of_competition', 'day_of_week_sin', 'day_of_week_cos', 'day_sin', 'day_cos']
+        data = data[ cols ]
+
         return data
 
 
@@ -76,12 +89,15 @@ class Rossmann( object ):
         return data
 
 
-    def get_prediction( self, model, original_data, test_data ):
+    def get_prediction( self, model, test_data ):
         # make prediction
-        pred = model.predict( test_data )
+        pred = model.predict( xgb.DMatrix( test_data ) )
 
-        # 
-        response = original_data
+        # add to test_data 
+        test_data['prediction'] = np.expm1( pred )
+        response = test_data
 
         print( '===> returning prediction' )
         response_json = response.to_json( orient='records' )
+
+        return response_json
