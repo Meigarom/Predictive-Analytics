@@ -1,11 +1,15 @@
-from tokens import cmc_token
-from flask import Flask, request, Response
+from tokens       import cmc_token
+from flask        import Flask, request, Response
+from configparser import ConfigParser
 
 import requests
 import json
 import re
 
-token = '923271662:AAGhKPqrlbYWnMgfPYm_zr_NsL140_fL3Gs'
+config = ConfigParser()
+config.read( os.environ['HOME'] + '/' + '.config.ini' )
+
+token = config['COIN']['TOKEN']
 
 
 app = Flask( __name__ )
