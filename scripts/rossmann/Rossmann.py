@@ -6,7 +6,7 @@ import xgboost as xgb
 
 class Rossmann( object ):
     def __init__( self ):
-        param_path = '/Users/meigarom/repos/Predictive-Analytics/parameter/'
+        param_path = '/Users/meigarom/repos/Predictive-Analytics/parameters/'
         self.param_store_type = pickle.load( open( param_path + 'param_store_type.pkl', 'rb' ) )
         self.param_assortment = pickle.load( open( param_path + 'param_assortment.pkl', 'rb' ) )
         self.param_competition_distance = pickle.load( open( param_path + 'param_competition_distance.pkl', 'rb' ) )
@@ -138,7 +138,7 @@ class Rossmann( object ):
 
     def get_prediction( self, model, test_original, test_data ):
         # make prediction
-        pred = model.predict( xgb.DMatrix( test_data ) )
+        pred = model.predict( test_data )
 
         # add to test_data 
         test_original['Prediction'] = np.expm1( pred )
