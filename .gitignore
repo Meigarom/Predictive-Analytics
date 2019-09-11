@@ -9,6 +9,7 @@ __pycache__/
 # Filename
 *.csv
 *.zip
+*.json
 
 # Machine Learning Models
 model/
