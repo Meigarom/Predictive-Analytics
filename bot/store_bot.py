@@ -17,37 +17,39 @@ TOKEN = config['ROSSMANN']['TOKEN']
 app = Flask( __name__ )
 
 
-def get_data():
+def get_data( store ):
     # read dataset
     test_raw = pd.read_csv( ROOT_PATH + 'data/test.csv' )
     df_stores_raw = pd.read_csv( ROOT_PATH + 'data/store.csv' )
 
     # merge dataset
-    df_test = pd.merge( test_raw, df_stores_raw, on='Store', how='left' )
+    df1 = pd.merge( test_raw, df_stores_raw, on='Store', how='left' )
+
+    # select only predicted store
+    store = int( store )
+    df2 = df1[df1['Store'] == store]
 
     # remove close days and undefined days
-    df_test = df_test[~df_test['Open'].isnull()]
-    df_test = df_test[df_test['Open'] != 0]
+    df2 = df2[~df2['Open'].isnull()]
+    df2 = df2[df2['Open'] != 0]
 
     # dataframe to json
-    b = df_test.to_dict( orient='records' )
-    d = json.dumps( b )
+    df3 = df2.to_dict( orient='records' )
+    d = json.dumps( df3 )
 
     return d
 
 def get_prediction( store ):
     url = 'http://0.0.0.0:5000/rossmann/predict'
     h = {'Content-type': 'application/json'}
-    d = get_data()
+    d = get_data( store )
 
     r = requests.post( url, data=d, headers=h )
 
     df_results = pd.DataFrame( r.json(), columns=list( r.json()[0].keys() ) )
     df_agg = df_results[['Store', 'Prediction']].groupby( 'Store' ).sum().reset_index()
 
-    s = df_agg[df_agg['Store'] == store]
-
-    return s
+    return df_agg
 
 
 def send_message( chat_id, text='kkkk' ):
@@ -62,16 +64,7 @@ def parse_message( message ):
     chat_id = message['message']['chat']['id']
     txt = message['message']['text'] # /btc or /maid
 
-    #pattern = r'/[a-zA-Z]{2,4}'
-
-    #ticker = re.findall( pattern, txt )
-
-    symbol = int( txt.replace( '/', '' ) )
-
-    #if ticker:
-    #    symbol = ticker[0][1:]
-    #else:
-    #    symbol = ''
+    symbol = txt.replace( '/', '' )
 
     return chat_id, symbol
 
@@ -100,10 +93,6 @@ def index():
     else:
         return '<h1>Store Bot</h1>'
 
-def main():
-    p = get_prediction( store=1 )
-
-    print( 'Store {} will sell ${:,.2f} in the next 6 weeks'.format( p['Store'][0], p['Prediction'][0] ) )
 
 if __name__ == '__main__':
     app.run( port=5001, debug=True )
@@ -123,6 +112,6 @@ if __name__ == '__main__':
 #https://api.telegram.org/bot937473363:AAFipUhaNR042WusW5i2e1Ibh4e4ZFMh8so/sendMessage?chat_id=449124440&text=Store 1 will sell $183,801.81 in the next 6 weeks
 
 # set the Webhook
-#https://api.telegram.org/bot937473363:AAFipUhaNR042WusW5i2e1Ibh4e4ZFMh8so/setWebhook?url=https://arcus.serveo.net/
+#https://api.telegram.org/bot937473363:AAFipUhaNR042WusW5i2e1Ibh4e4ZFMh8so/setWebhook?url=https://nobis.serveo.net
 
-#https://api.telegram.org/bot937473363:AAFipUhaNR042WusW5i2e1Ibh4e4ZFMh8so/setWebhook?url=https://meigarom-ux5n.localhost.run
+#https://api.telegram.org/bot937473363:AAFipUhaNR042WusW5i2e1Ibh4e4ZFMh8so/setWebhook?url=https://meigarom-n5f5.localhost.run
