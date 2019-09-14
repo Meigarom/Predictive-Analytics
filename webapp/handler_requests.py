@@ -6,7 +6,7 @@ import numpy                                    as np
 import pandas                                   as pd
 import pickle
 
-from flask             import Flask, request
+from flask             import Flask, request, render_template
 from rossmann.Rossmann import Rossmann
 
 
@@ -39,6 +39,11 @@ model_rossmann = load_artifact( model_path, model_name )
 # ---------------------------------
 # Endpoint 
 # ---------------------------------
+@app.route( '/', methods=['GET', 'POST'] )
+def main():
+    return render_template( 'main.html' )
+
+
 @app.route( '/rossmann/predict', methods=['POST'] )
 def rossmann_predict():
     # input data for prediction
