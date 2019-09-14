@@ -1,2 +1,1 @@
-web: gunicorn app:handler_requests
-heroku ps:scale web=1
+web: python handler_requests.py
