@@ -115,3 +115,49 @@ if __name__ == '__main__':
 #https://api.telegram.org/bot937473363:AAFipUhaNR042WusW5i2e1Ibh4e4ZFMh8so/setWebhook?url=https://nobis.serveo.net
 
 #https://api.telegram.org/bot937473363:AAFipUhaNR042WusW5i2e1Ibh4e4ZFMh8so/setWebhook?url=https://meigarom-n5f5.localhost.run
+
+
+## -----------------------------------------
+## How to Deploy to Heroku 
+## -----------------------------------------
+#01. Create a separated folder
+#    1.1. mkdir rossmann-bot
+#    
+#02. Start a python virtual environment
+#    2.1. virtualenv .venv -p python3
+#    2.2. source .venv/bin/activate
+#
+#03. Structure of the files
+#    Procfile
+#    requirements
+#    bot.py
+#    model/xgboost.pkl
+#    data/store.csv
+#    data/test.csv
+#    templates/main.html
+#
+#04. pip freeze > requirements.txt
+#
+#05. echo "web: python bot.py" > Procfile
+#
+#06. git init
+#
+#07. vim .gitignore -> *.pyc .venv
+#
+#08. heroku login
+#
+#09. heroku create rossmann-model
+#
+#10. git add .
+#
+#11. git commit -m 'first commit'
+#
+#12. git push heroku master 
+#
+#13. heroku open
+#
+#14. Delete Webhook
+#    14.1. https://api.telegram.org/bot<chat_id>/deleteWebhook
+#
+#15. Set Webhook
+#    15.1. https//api.telegra.org/bot<chat_id>/setWebhook?url=<endpoint>
