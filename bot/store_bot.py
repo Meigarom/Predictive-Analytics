@@ -1,9 +1,12 @@
+import io
 import os
 import re
 import json
 import pandas as pd
+import seaborn as sns
 import requests
 
+from matplotlib import pyplot as plt
 from configparser import ConfigParser
 from flask import Flask, request, Response
 
@@ -13,8 +16,22 @@ config.read( os.environ['HOME'] + '/' + '.config.ini' )
 ROOT_PATH = config['ROSSMANN']['ROOT_PATH']
 TOKEN = config['ROSSMANN']['TOKEN']
 
-
 app = Flask( __name__ )
+
+
+def get_plot( data, store ):
+    # Plot the Prediction Curve
+    fig = plt.figure()
+    ax = plt.subplot()
+    data = data.sort_values( 'Date', ascending=True )
+    ax.plot( pd.to_datetime( data['Date'] ).dt.strftime( '%m-%d' ), data['Prediction'] )
+    plt.title( 'Prediction of Store {}'.format( store ) )
+    plt.xticks( rotation=90 )
+
+    buf = io.BytesIO()
+    fig.savefig( buf, format='png' )
+
+    return buf
 
 
 def get_data( store ):
@@ -39,24 +56,36 @@ def get_data( store ):
 
     return d
 
+
 def get_prediction( store ):
     url = 'http://0.0.0.0:5000/rossmann/predict'
     h = {'Content-type': 'application/json'}
     d = get_data( store )
 
+    # make the API requestion
     r = requests.post( url, data=d, headers=h )
 
-    df_results = pd.DataFrame( r.json(), columns=list( r.json()[0].keys() ) )
-    df_agg = df_results[['Store', 'Prediction']].groupby( 'Store' ).sum().reset_index()
+    if r.status_code == 201:
+        df = pd.DataFrame()
 
-    return df_agg
+    else:
+        # results of the prediction
+        df = pd.DataFrame( r.json(), columns=list( r.json()[0].keys() ) )
+
+    return df
 
 
-def send_message( chat_id, text='kkkk' ):
-    url = f'https://api.telegram.org/bot{TOKEN}/sendMessage'
-    payload = {'chat_id': chat_id, 'text': text }
+def send_message( chat_id, text='kkkk', type='text' ):
+    url = f'https://api.telegram.org/bot{TOKEN}/'
 
-    r = requests.post( url, json=payload )
+    if type == 'text':
+        url = url + 'sendMessage?chat_id={}'.format( chat_id )
+        r = requests.post( url, json={'text': text} )
+
+    else:
+        url = url + 'sendPhoto?chat_id={}'.format( chat_id )
+        r = requests.post( url, files={'photo': text} )
+
     return r
 
 
@@ -69,7 +98,6 @@ def parse_message( message ):
     return chat_id, symbol
 
 
-
 @app.route( '/', methods=['POST', 'GET'] )
 def index():
     if request.method == 'POST':
@@ -80,22 +108,62 @@ def index():
             send_message( chat_id, 'Wrong Data' )
             return Response( 'Ok', status=200 )
 
-        pred = get_prediction( store=symbol )
+        # get the prediction
+        data = get_prediction( store=symbol )
 
-        store_id = pred['Store'].values[0] 
-        value = pred['Prediction'].values[0]
-        m = 'Store {} will sell ${:,.2f} in the next 6 weeks'.format( store_id, value ) 
+        if not data.empty:
+            # sales aggregated
+            pred = data[['Store', 'Prediction']].groupby( 'Store' ).sum().reset_index()
+            store_id = pred['Store'].values[0] 
+            value = pred['Prediction'].values[0]
+            m = 'Store {} will sell ${:,.2f} in the next 6 weeks'.format( store_id, value ) 
 
-        send_message( chat_id, m  )
+            send_message( chat_id, m, 'text' )
+
+            # send sales picture
+            buf = get_plot( data )
+            buf.seek(0)
+
+            send_message( chat_id, buf, 'photo' )
+
+        else:
+            m = 'Store {} Not Registered'.format( store )
+            send_message( chat_id, m, 'text' )
 
         return Response( 'Ok', status=200 )
          
     else:
         return '<h1>Store Bot</h1>'
 
+def main():
+    chat_id = 449124440
+    store = '6'
+
+    # get the prediction
+    data = get_prediction( store=store )
+
+    if not data.empty:
+        # sales aggregated
+        pred = data[['Store', 'Prediction']].groupby( 'Store' ).sum().reset_index()
+        store_id = pred['Store'].values[0] 
+        value = pred['Prediction'].values[0]
+        m = 'Store {} will sell ${:,.2f} in the next 6 weeks'.format( store_id, value ) 
+
+        send_message( chat_id, m, 'text' )
+
+        # send sales picture
+        buf = get_plot( data, store )
+        buf.seek(0)
+
+        send_message( chat_id, buf, 'photo' )
+
+    else:
+        m = 'Store {} Not Registered'.format( store )
+        send_message( chat_id, m, 'text' )
 
 if __name__ == '__main__':
-    app.run( port=5001, debug=True )
+    main()
+    #app.run( port=5001, debug=True )
 
 # original api
 #https://api.telegram.org/bot123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11/getMe
