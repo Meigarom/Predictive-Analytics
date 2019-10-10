@@ -6,7 +6,7 @@ import numpy                                    as np
 import pandas                                   as pd
 import pickle
 
-from flask             import Flask, request
+from flask             import Flask, request, Response
 from rossmann.Rossmann import Rossmann
 
 
@@ -45,28 +45,33 @@ def rossmann_predict():
     print( '===> getting the data from request' )
     test_json = request.get_json()
 
-    # convert json to DataFrame
-    if isinstance( test_json, dict ): # an unique example of test
-        test_raw = pd.DataFrame( test_json, index=[0] )
-    else:                             # multiple examples
-        test_raw = pd.DataFrame( test_json, columns=list( test_json[0].keys() ) )
+    if test_json:
+        # convert json to DataFrame
+        if isinstance( test_json, dict ): # an unique example of test
+            test_raw = pd.DataFrame( test_json, index=[0] )
+        else:                             # multiple examples
+            test_raw = pd.DataFrame( test_json, columns=list( test_json[0].keys() ) )
 
-    # class to prediction
-    pipeline = Rossmann()
 
-    # pre-process the test data to prediction
-    print( '===> pre-process test data to prediction' )
-    test_transformed = pipeline.transform( test_raw.copy() )
+        # class to prediction
+        pipeline = Rossmann()
 
-    # feature engineering
-    print( '===> feature engineering' )
-    data = pipeline.feature_engineering( test_transformed )
+        # pre-process the test data to prediction
+        print( '===> pre-process test data to prediction' )
+        test_transformed = pipeline.transform( test_raw.copy() )
 
-    # make a prediction
-    print( '===> prediction' )
-    response_json = pipeline.get_prediction( model=model_rossmann, test_original=test_raw, test_data=data ) 
+        # feature engineering
+        print( '===> feature engineering' )
+        data = pipeline.feature_engineering( test_transformed )
 
-    return response_json
+        # make a prediction
+        print( '===> prediction' )
+        response_json = pipeline.get_prediction( model=model_rossmann, test_original=test_raw, test_data=data ) 
+
+        return response_json
+
+    else:
+        return Response( "{}", status= 201, mimetype='application/json' )
 
 
 if __name__ == '__main__':
