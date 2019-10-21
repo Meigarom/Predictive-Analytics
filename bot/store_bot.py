@@ -228,4 +228,4 @@ if __name__ == '__main__':
 #    14.1. https://api.telegram.org/bot<chat_id>/deleteWebhook
 #
 #15. Set Webhook
-#    15.1. https//api.telegra.org/bot<chat_id>/setWebhook?url=<endpoint>
+#    15.1. https//api.telegra.org/bot<chat_id>/setWebhook?url=https://rossmann-bot.herokuapp.com
